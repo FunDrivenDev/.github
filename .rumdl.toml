@@ -2,3 +2,8 @@
 [global]
 # Tables and links run past any line length.
 disable = ["MD013"]
+
+# The profile README opens on a banner and uses GitHub's allowed HTML
+# (<picture>, <p align>, <details>, <table>) for layout.
+[per-file-ignores]
+"profile/README.md" = ["MD033", "MD041"]

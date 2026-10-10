@@ -20,6 +20,11 @@ init:
 fmt scope="all":
     @files=$(just _files {{ quote(scope) }} '\.md$'); [ -z "$files" ] || rumdl fmt $files
 
+# Redraw the banner, start button and avatar from design/images.py, then the avatar PNG.
+images:
+    python3 design/images.py
+    resvg --width 1024 --height 1024 logos/fdd.svg logos/fdd.png
+
 # Lint the files in scope: Markdown, spelling, and every SVG must parse.
 lint scope="all":
     #!/usr/bin/env bash
@@ -28,7 +33,7 @@ lint scope="all":
     svg=$(just _files {{ quote(scope) }} '\.svg$')
     all=$(just _files {{ quote(scope) }} '.')
     [ -z "$md" ] || rumdl check $md
-    [ -z "$all" ] || typos $all
+    [ -z "$all" ] || typos --force-exclude $all
     [ -z "$svg" ] || xmllint --noout $svg
 
 # Lint everything that differs from main, or the whole repo.
