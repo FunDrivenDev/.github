@@ -50,8 +50,7 @@ brew install fundrivendev/tap/memo
 DNS (Terraform on Cloudflare), this GitHub org itself (Terraform), the VPS (Ansible) and my dotfiles (chezmoi). Even the shop window: **[fundriven.dev](https://fundriven.dev)** is a Windows XP-style desktop, *FunDriven XP: eXtra Puns*, with zero dependencies.
 
 <p align="center">
-<a href="https://fundriven.dev"><img src="../assets/start.svg" alt="start: open fundriven.dev" height="44"></a><br>
-<sub>Boots <a href="https://fundriven.dev">fundriven.dev</a>: FunDriven XP, eXtra Puns. Zero dependencies.</sub>
+<a href="https://fundriven.dev"><img src="../assets/start.svg" alt="start: open fundriven.dev" height="44"></a>
 </p>
 
-<p align="center"><sub>289 PRs merged in ~3 weeks, many while I slept. Built for fun, kept for good.<br>Rust · Go · TypeScript/Deno · Svelte 5 · Tauri 2 · Python · Terraform · Ansible · mise · just · Claude Code</sub></p>
+<p align="center"><sub>Rust · Go · TypeScript/Deno · Svelte 5 · Tauri 2 · Python · Terraform · Ansible · mise · just · Claude Code</sub></p>

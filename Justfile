@@ -28,7 +28,7 @@ lint scope="all":
     svg=$(just _files {{ quote(scope) }} '\.svg$')
     all=$(just _files {{ quote(scope) }} '.')
     [ -z "$md" ] || rumdl check $md
-    [ -z "$all" ] || typos $all
+    [ -z "$all" ] || typos --force-exclude $all
     [ -z "$svg" ] || xmllint --noout $svg
 
 # Lint everything that differs from main, or the whole repo.
