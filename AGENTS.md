@@ -6,7 +6,8 @@
 | --- | --- |
 | `profile/README.md` | the README shown on <https://github.com/FunDrivenDev> |
 | `assets/` | the images it references (SVG, dark and light variants) |
-| `logos/` | the org avatar and its sources |
+| `logos/` | the org avatar: `fdd.svg`, and `fdd.png` uploaded by hand |
+| `design/images.py` | draws every SVG above; `just images` reruns it and the PNG |
 
 ## Writing here
 
