@@ -5,9 +5,11 @@
 </picture>
 </p>
 
-I'm **Raphaël** ([@rlvdx](https://github.com/rlvdx)), a DevOps/back-end dev in Nantes, France, by day at Guest Suite. I care about two things and refuse to pick one: **happy users** and **calm developers**.
+I'm **Raphaël** ([@rlvdx](https://github.com/rlvdx)), an AI-powered product engineer in Nantes, France, by day at Guest Suite: full-stack, from front end to infrastructure, assisted by agents, on the product and the factory that makes it. I care about two things and refuse to pick one: **happy users** and **calm developers**.
 
 This org is where the things I build with Claude Code grow up and go public. One human on the day shift, agents on the night shift.
+
+The workshop now has a logbook: **[blog.fundriven.dev](https://blog.fundriven.dev/)**, opening with a Claude Code status line for the context budget.
 
 ### Agent tooling that keeps sessions in their smart zone
 
@@ -23,7 +25,6 @@ This org is where the things I build with Claude Code grow up and go public. One
 - **defactory**: a predictable line around non-deterministic workers. Claude Code sessions work the Stations (Detective, Architect, Worker, Judge…), deterministic Rust code runs the line, because *the orchestrator is never an LLM*.
 - **wesh**: a macOS pro tool to steer several Claude Code sessions at once against Linear issues.
 - **fundrivenOS**: how we work, as Markdown for agents.
-- **linear-triage-bench**: LLM triage of issues, benchmarked. Models judged by models.
 
 </details>
 
