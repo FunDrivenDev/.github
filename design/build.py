@@ -257,50 +257,161 @@ def start_button():
 
 
 # ---------------------------------------------------------------- logos
-def logo_fd():
-    p = FR
-    return svg(512, 512, 'FunDrivenDev logo: fd spark', '', '',
-               f'<rect width="512" height="512" fill="{p["base"]}"/>'
-               f'<g fill="none" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" transform="translate(-14 6)">'
-               f'<path d="M178 392V214a72 72 0 0 1 72-72h12" stroke="{p["mauve"]}"/>'
-               f'<path d="M126 252H232" stroke="{p["mauve"]}"/>'
-               f'<circle cx="324" cy="326" r="66" stroke="{p["blue"]}"/>'
-               f'<path d="M390 160V392" stroke="{p["blue"]}"/></g>'
-               + spark(400, 98, 3.3, p['yellow']))
+# Three aesthetics (XP, assembly line, zen), each as an FDD monogram and as a pictogram.
+# Letters are stroked paths, not text, so the marks render the same everywhere.
+import math
 
 
-def logo_moon():
-    p = FR
-    return svg(512, 512, 'FunDrivenDev logo: night-shift moon',
-               '<mask id="m"><rect width="512" height="512" fill="#fff"/><circle cx="306" cy="212" r="128" fill="#000"/></mask>', '',
-               f'<rect width="512" height="512" fill="{p["crust"]}"/>'
-               f'<circle cx="236" cy="262" r="150" fill="{p["yellow"]}" mask="url(#m)"/>'
-               + spark(318, 222, 5.4, p['mauve']) +
-               f'<rect x="290" y="292" width="54" height="16" rx="5" fill="{p["green"]}"/>'
-               f'<circle cx="392" cy="128" r="8" fill="{p["text"]}"/><circle cx="420" cy="326" r="6" fill="{p["text"]}" opacity=".7"/>'
-               f'<circle cx="118" cy="120" r="5" fill="{p["text"]}" opacity=".6"/>')
+def fdd_paths(x0, y, h, wf, wd, gap, r, mid=.5, fbar=.82):
+    """Centerlines of F, D, D starting at x0, cap height h; r is the D bowl radius."""
+    f = f'M{n(x0)} {n(y+h)}V{n(y)}H{n(x0+wf)}M{n(x0)} {n(y+h*mid)}H{n(x0+wf*fbar)}'
+
+    def d(x):
+        return (f'M{n(x)} {n(y)}H{n(x+wd-r)}A{n(r)} {n(r)} 0 0 1 {n(x+wd)} {n(y+r)}V{n(y+h-r)}'
+                f'A{n(r)} {n(r)} 0 0 1 {n(x+wd-r)} {n(y+h)}H{n(x)}Z')
+    x1 = x0 + wf + gap
+    x2 = x1 + wd + gap
+    return f, d(x1), d(x2), (x0, x1, x2)
 
 
-def logo_line():
-    p = FR
-    return svg(512, 512, 'FunDrivenDev logo: line of stations ending in a merge', '', '',
-               f'<rect width="512" height="512" fill="{p["base"]}"/>'
-               f'<path d="M100 256H330" stroke="{p["s2"]}" stroke-width="22" stroke-linecap="round"/>'
-               f'<circle cx="100" cy="256" r="28" fill="{p["blue"]}"/><circle cx="180" cy="256" r="28" fill="{p["teal"]}"/>'
-               f'<circle cx="260" cy="256" r="28" fill="{p["yellow"]}"/>'
-               f'<circle cx="384" cy="256" r="82" fill="{p["mauve"]}"/>'
-               f'<g fill="none" stroke="{p["crust"]}" stroke-width="16" stroke-linecap="round">'
-               f'<circle cx="360" cy="214" r="13"/><circle cx="360" cy="298" r="13"/><circle cx="414" cy="268" r="13"/>'
-               f'<path d="M360 228v56M360 230c0 22 14 38 40 38"/></g>')
+def fdd_width(wf, wd, gap):
+    return wf + gap + wd + gap + wd
 
 
-def logo_xp():
-    mask = ('<mask id="f"><rect width="512" height="512" fill="#fff"/>'
-            '<g fill="none" stroke="#000" stroke-width="40" stroke-linecap="round">'
-            '<path d="M226 440V236a74 74 0 0 1 74-74h40"/><path d="M164 272H300"/></g></mask>')
-    return svg(512, 512, 'FunDrivenDev logo: XP flag remix', mask, '',
-               '<rect width="512" height="512" fill="#ffffff"/>'
-               f'<g mask="url(#f)">{flag(110, 118, 140, 8, 16)}</g>')
+BLISS = ('<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1957cf"/>'
+         '<stop offset=".55" stop-color="#4b95ec"/><stop offset="1" stop-color="#a8d4fa"/></linearGradient>'
+         '<linearGradient id="hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc63a"/>'
+         '<stop offset="1" stop-color="#2f7d10"/></linearGradient>'
+         '<filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>')
+
+
+def bliss(hill_y=388):
+    return ('<rect width="512" height="512" fill="url(#sky)"/>'
+            '<g fill="#fff" opacity=".55" filter="url(#soft)"><ellipse cx="120" cy="92" rx="70" ry="16"/>'
+            '<ellipse cx="380" cy="70" rx="90" ry="18"/><ellipse cx="420" cy="150" rx="50" ry="10"/></g>'
+            f'<path d="M0 {hill_y+18}C110 {hill_y-40} 300 {hill_y-34} 512 {hill_y+6}V512H0Z" fill="url(#hill)"/>'
+            f'<path d="M0 {hill_y+18}C110 {hill_y-40} 300 {hill_y-34} 512 {hill_y+6}" fill="none" stroke="#c4ef7e" stroke-width="3" opacity=".7"/>')
+
+
+def logo_xp_fdd():
+    wf, wd, gap, h = 76, 96, 20, 128
+    x0 = 256 - fdd_width(wf, wd, gap) / 2 + 4
+    f, d1, d2, _ = fdd_paths(x0, 168, h, wf, wd, gap, 48)
+    letters = f + d1 + d2
+    sh = '<filter id="ds" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>'
+    return svg(512, 512, 'FunDrivenDev logo: FDD on an XP hillside', BLISS + sh, '',
+               bliss() +
+               '<g transform="skewX(-9) translate(40 0)" fill="none" stroke-linecap="square" stroke-linejoin="round">'
+               f'<path d="{letters}" stroke="#0a3a96" stroke-width="34" opacity=".55" transform="translate(5 8)" filter="url(#ds)"/>'
+               f'<path d="{letters}" stroke="#fff" stroke-width="34"/></g>'
+               + flag(229, 408, 24, 4, 3))
+
+
+def logo_xp_picto():
+    tb = ('<linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3c8df7"/>'
+          '<stop offset=".5" stop-color="#1f62e0"/><stop offset="1" stop-color="#1650c4"/></linearGradient>'
+          '<filter id="ws" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur stdDeviation="8"/></filter>')
+    x, y, w, h = 110, 132, 292, 232
+    b = [bliss(),
+         f'<rect x="{x+6}" y="{y+14}" width="{w}" height="{h}" rx="12" fill="#06235e" opacity=".45" filter="url(#ws)"/>',
+         f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="12" fill="#1650c4"/>',
+         f'<rect x="{x+6}" y="{y+40}" width="{w-12}" height="{h-46}" rx="3" fill="#ece9d8"/>',
+         f'<path d="M{x} {y+12}a12 12 0 0 1 12-12h{w-24}a12 12 0 0 1 12 12v28H{x}Z" fill="url(#tb)"/>',
+         f'<rect x="{x+10}" y="{y+3}" width="{w-20}" height="3" rx="1.5" fill="#fff" opacity=".35"/>',
+         f'<rect x="{x+w-38}" y="{y+8}" width="26" height="24" rx="5" fill="#e2532b" stroke="#fff" stroke-width="2"/>',
+         f'<path d="M{x+w-31} {y+15}l12 10m0-10l-12 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>',
+         f'<rect x="{x+w-68}" y="{y+8}" width="26" height="24" rx="5" fill="#3c8df7" stroke="#fff" stroke-width="2"/>',
+         f'<path d="M{x+w-61} {y+25}h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>',
+         flag(x+16, y+12, 7, 2, 1.2),
+         flag(196, 212, 54, 6, 7),
+         # pointer
+         '<path d="M328 272V330L341 318L351 340L361 335L351 314H368Z" fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"/>']
+    return svg(512, 512, 'FunDrivenDev logo: an XP window holding the four-pane flag', BLISS + tb, '', ''.join(b))
+
+
+STEEL = ('<linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d313a"/>'
+         '<stop offset="1" stop-color="#1b1d23"/></linearGradient>'
+         '<pattern id="haz" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
+         '<rect width="28" height="28" fill="#1b1d23"/><rect width="14" height="28" fill="#f2b705"/></pattern>')
+SAFETY = '#f2b705'
+
+
+def logo_line_fdd():
+    wf, wd, gap, h, sw = 70, 90, 42, 136, 36
+    x0 = 256 - fdd_width(wf, wd, gap) / 2 + sw / 4
+    y = 180
+    f, d1, d2, xs = fdd_paths(x0, y, h, wf, wd, gap, 30)
+    cuts = ''.join(f'<rect x="{n(x+sw/2+3)}" y="{y-30}" width="9" height="{h+60}" fill="#000"/>' for x in xs)
+    mask = f'<mask id="st"><rect width="512" height="512" fill="#fff"/>{cuts}</mask>'
+    rivets = ''.join(f'<circle cx="{cx}" cy="{cy}" r="7" fill="#3a3f4a" stroke="#14161b" stroke-width="2"/>'
+                     for cx, cy in ((44, 44), (468, 44), (44, 468), (468, 468)))
+    return svg(512, 512, 'FunDrivenDev logo: stencilled FDD over a hazard stripe', STEEL + mask, '',
+               '<rect width="512" height="512" fill="url(#steel)"/>' + rivets +
+               f'<text class="m" x="256" y="150" font-size="17" letter-spacing="5" text-anchor="middle" fill="#8a909c">LINE · 01</text>'
+               f'<path d="{f + d1 + d2}" fill="none" stroke="{SAFETY}" stroke-width="{sw}" stroke-linecap="butt" '
+               f'stroke-linejoin="miter" mask="url(#st)"/>'
+               '<rect x="0" y="372" width="512" height="34" fill="url(#haz)"/>'
+               '<rect x="0" y="372" width="512" height="2" fill="#000" opacity=".4"/>')
+
+
+def logo_line_picto():
+    belt_y, crate = 330, 78
+    xs = (104, 217, 330)
+    b = ['<rect width="512" height="512" fill="url(#steel)"/>',
+         # gantry and press over the middle crate
+         '<rect x="86" y="104" width="340" height="14" rx="3" fill="#3a3f4a"/>',
+         f'<rect x="{xs[1]+crate/2-6}" y="118" width="12" height="54" fill="#5b616e"/>',
+         f'<rect x="{xs[1]+crate/2-30}" y="172" width="60" height="22" rx="3" fill="{SAFETY}"/>',
+         f'<rect x="{xs[1]+crate/2-30}" y="190" width="60" height="4" fill="#000" opacity=".25"/>',
+         # crates: open issue, in progress, shipped
+         f'<rect x="{xs[0]+3}" y="{belt_y-crate+3}" width="{crate-6}" height="{crate-6}" rx="6" fill="none" stroke="#8a909c" stroke-width="6" stroke-dasharray="14 9"/>',
+         f'<rect x="{xs[1]}" y="{belt_y-crate}" width="{crate}" height="{crate}" rx="6" fill="#3a3f4a" stroke="{SAFETY}" stroke-width="6"/>',
+         f'<path d="M{xs[1]+16} {belt_y-crate/2}H{xs[1]+crate-16}" stroke="{SAFETY}" stroke-width="6" stroke-linecap="round"/>',
+         f'<rect x="{xs[2]}" y="{belt_y-crate}" width="{crate}" height="{crate}" rx="6" fill="{SAFETY}"/>',
+         f'<path d="M{xs[2]+20} {belt_y-crate/2+2}l13 13l26-28" fill="none" stroke="#1b1d23" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>',
+         # belt
+         f'<rect x="80" y="{belt_y+6}" width="352" height="44" rx="22" fill="#14161b" stroke="#5b616e" stroke-width="5"/>',
+         ''.join(f'<circle cx="{cx}" cy="{belt_y+28}" r="10" fill="#3a3f4a" stroke="#8a909c" stroke-width="3"/>'
+                 for cx in range(104, 420, 44)),
+         f'<path d="M412 {belt_y+72}h-28m28 0l-10-8m10 8l-10 8" stroke="#8a909c" stroke-width="4" stroke-linecap="round" fill="none" opacity=".8"/>']
+    return svg(512, 512, 'FunDrivenDev logo: three crates on a conveyor, the last one shipped', STEEL, '', ''.join(b))
+
+
+PAPER, INK, SEAL = '#f3efe7', '#26272b', '#c4472c'
+
+
+def logo_zen_fdd():
+    wf, wd, gap, h = 74, 96, 30, 128
+    x0 = 256 - fdd_width(wf, wd, gap) / 2 - 6
+    y = 192
+    f, d1, d2, _ = fdd_paths(x0, y, h, wf, wd, gap, h / 2, mid=.52, fbar=.78)
+    right = x0 + fdd_width(wf, wd, gap)
+    return svg(512, 512, 'FunDrivenDev logo: FDD in a thin ink line with a red seal', '', '',
+               f'<rect width="512" height="512" fill="{PAPER}"/>'
+               f'<path d="{f + d1 + d2}" fill="none" stroke="{INK}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>'
+               f'<rect x="{n(right+16)}" y="{y+h-22}" width="22" height="22" rx="3" fill="{SEAL}"/>'
+               f'<path d="M{n(x0)} {y+h+44}H{n(right)}" stroke="{INK}" stroke-width="1.5" opacity=".25"/>')
+
+
+def enso(cx, cy, R, wmax, a0, a1, steps=140):
+    """A brush ring: thick where the stroke starts, tapering to a dry tip."""
+    outer, inner = [], []
+    for i in range(steps + 1):
+        u = i / steps
+        a = math.radians(a0 + (a1 - a0) * u)
+        w = wmax * (0.55 + 0.45 * math.sin(math.pi * min(u * 2.2, 1) / 2)) * (1 - 0.92 * u ** 1.6)
+        r = R + 4 * math.sin(3 * a + .8)
+        outer.append((cx + (r + w / 2) * math.cos(a), cy + (r + w / 2) * math.sin(a)))
+        inner.append((cx + (r - w / 2) * math.cos(a), cy + (r - w / 2) * math.sin(a)))
+    pts = outer + inner[::-1]
+    return 'M' + 'L'.join(f'{n(px)} {n(py)}' for px, py in pts) + 'Z'
+
+
+def logo_zen_picto():
+    return svg(512, 512, 'FunDrivenDev logo: an ensō with a red seal', '', '',
+               f'<rect width="512" height="512" fill="{PAPER}"/>'
+               f'<path d="{enso(250, 256, 146, 34, -62, 268)}" fill="{INK}"/>'
+               f'<rect x="378" y="386" width="24" height="24" rx="3" fill="{SEAL}"/>')
 
 
 # ---------------------------------------------------------------- READMEs
@@ -501,6 +612,12 @@ DNS and this org with Terraform, the VPS with Ansible, dotfiles with chezmoi.
 <p align="center"><sub>289 PRs merged in ~3 weeks, many while I slept. Built for fun, kept for good.<br>{STACK}</sub></p>
 '''
 
+# E: the XP window banner and start-button footer of D around the body of A.
+_A_BODY = README_A.split('</p>\n\n', 1)[1].rsplit('\n---\n', 1)[0]
+_D_HEAD = README_D.split('</p>\n\n', 1)[0] + '</p>\n\n'
+_D_FOOT = README_D[README_D.index('<p align="center">\n<a href="https://fundriven.dev">'):]
+README_E = _D_HEAD + _A_BODY + '\n' + _D_FOOT
+
 VERSIONS = {
     'a': dict(name='A · Night shift', readme=README_A,
               desc='Lead option. A quiet night workshop: moon, desk lamp over a laptop that types by itself, agent sparks drifting up. Three themed sections; private projects folded into "Still in the workshop".',
@@ -514,13 +631,19 @@ VERSIONS = {
     'd': dict(name='D · XP light', readme=README_D,
               desc='A light nod to fundriven.dev: one XP-style window card in the four flag colors, a waving flag, and a start button that opens the site. Everything else stays plain.',
               assets={'window-dark.svg': banner_d(FR, True), 'window-light.svg': banner_d(LA, False), 'start.svg': start_button()}),
+    'e': dict(name='E · XP frame, night-shift body', readme=README_E,
+              desc='The XP window banner and the start-button footer from D, around the whole body of A (Night shift).',
+              assets={'window-dark.svg': banner_d(FR, True), 'window-light.svg': banner_d(LA, False), 'start.svg': start_button()}),
 }
+PREVIEW = ['e']
 
 LOGOS = [
-    ('fd-spark', '1 · fd spark', 'An f and d drawn with one round stroke weight in mauve and blue, with a yellow four-point spark on the d. Frappé base square, safe inside a circle crop.', logo_fd()),
-    ('night-shift-moon', '2 · Night-shift moon', 'A yellow crescent holding a mauve spark and a green prompt cursor: the agent working while the moon is up. Pairs with version A.', logo_moon()),
-    ('line', '3 · Line', 'Three station dots on a track running into a mauve merge disc. Pairs with version C.', logo_line()),
-    ('xp-flag', '4 · XP flag remix', 'The four wavy panes of the fundriven.dev flag with a white "f" cut through them. Pairs with version D and the site desktop.', logo_xp()),
+    ('XP', 'xp-fdd', 'FDD', 'Bold white italic FDD, Start-button style, over a Bliss sky and hill, with the four-pane flag on the hill. Pairs with the XP frame and fundriven.dev.', logo_xp_fdd()),
+    ('XP', 'xp-window', 'Pictogram', 'A Luna-blue XP window holding the four-pane flag, with the arrow pointer: the fundriven.dev desktop in one icon.', logo_xp_picto()),
+    ('Assembly line', 'line-fdd', 'FDD', 'Safety-yellow stencilled FDD on graphite steel, a LINE 01 plate and a hazard stripe: a factory floor marking.', logo_line_fdd()),
+    ('Assembly line', 'line-crates', 'Pictogram', 'Three crates on a conveyor under a press: dashed (issue), in progress, shipped with a check. The software factory in one picture.', logo_line_picto()),
+    ('Zen', 'zen-fdd', 'FDD', 'FDD in one thin ink line on warm paper, a small red seal and a hairline: quiet, premium, lots of air.', logo_zen_fdd()),
+    ('Zen', 'zen-enso', 'Pictogram', 'A single tapering brush ensō on warm paper with the red seal: calm, one gesture, made by hand.', logo_zen_picto()),
 ]
 
 
@@ -689,6 +812,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 .dicon.sel span{background:#2b62c9;text-shadow:none;outline:1px dotted #fff}
 .taskbar{position:absolute;left:0;right:0;bottom:0;height:40px;background:linear-gradient(#3a7af0,#2457cf);border-top:1px solid #6aa0ff;display:flex;align-items:center}
 .taskbar img{height:40px;width:auto}
+.fam{margin:28px 0 10px;font-size:18px}
 .note{color:var(--muted);font-size:13px;margin:6px 0 0}
 @media (max-width:640px){.logo{grid-template-columns:1fr}.gh{padding:16px}.gh-nav{margin:14px -16px 18px;padding:0 16px}.markdown-body{padding:16px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -696,10 +820,10 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 
 JS = r'''
 (function(){
-  var ids=['a','b','c','d','logos'];
   var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  var ids=tabs.map(function(t){return t.dataset.id;});
   function show(id,focus){
-    if(ids.indexOf(id)<0) id='a';
+    if(ids.indexOf(id)<0) id=ids[0];
     tabs.forEach(function(t){var on=t.dataset.id===id;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;if(on&&focus)t.focus();});
     [].forEach.call(document.querySelectorAll('[role="tabpanel"]'),function(p){p.hidden=p.id!=='p-'+id;});
     try{localStorage.setItem('fdd-tab',id);}catch(e){}
@@ -716,7 +840,7 @@ JS = r'''
   });
   window.addEventListener('hashchange',function(){show(location.hash.slice(1));});
   var init=location.hash.slice(1);
-  if(ids.indexOf(init)<0){try{init=localStorage.getItem('fdd-tab')||'a';}catch(e){init='a';}}
+  if(ids.indexOf(init)<0){try{init=localStorage.getItem('fdd-tab')||ids[0];}catch(e){init=ids[0];}}
   show(init);
   [].forEach.call(document.querySelectorAll('.seg'),function(seg){
     var mock=document.getElementById(seg.dataset.target);
@@ -746,12 +870,13 @@ def esc(s):
 
 
 def build_preview():
-    logo1 = data_uri(LOGOS[0][3])
+    logo1 = data_uri(LOGOS[0][4])
     tab_btns = ''.join(
-        f'<button role="tab" id="t-{k}" data-id="{k}" aria-controls="p-{k}">{esc(v["name"])}</button>' for k, v in VERSIONS.items())
+        f'<button role="tab" id="t-{k}" data-id="{k}" aria-controls="p-{k}">{esc(VERSIONS[k]["name"])}</button>' for k in PREVIEW)
     tab_btns += '<button role="tab" id="t-logos" data-id="logos" aria-controls="p-logos">Logos</button>'
     panels = []
-    for k, v in VERSIONS.items():
+    for k in PREVIEW:
+        v = VERSIONS[k]
         sizes = ', '.join(f'{name} ({len(s.encode())/1024:.1f} KB)' for name, s in v['assets'].items())
         body = render_for_preview(v['readme'], v['assets'])
         panels.append(f'''<section role="tabpanel" id="p-{k}" aria-labelledby="t-{k}" hidden>
@@ -776,8 +901,11 @@ def build_preview():
 </section>''')
     # logos
     items = []
-    for slug, title, desc, s in LOGOS:
+    for i, (family, slug, title, desc, s) in enumerate(LOGOS):
         u = data_uri(s)
+        title = f'{family} · {title}'
+        if i % 2 == 0:
+            items.append(f'<h3 class="fam">{esc(family)}</h3>')
 
         def ground(cls, label):
             row = lambda shape: ''.join(f'<img class="{shape}" src="{u}" width="{px}" height="{px}" alt="">' for px in (96, 40, 20))
@@ -787,17 +915,17 @@ def build_preview():
 <div><h3>{esc(title)}</h3><p>{esc(desc)}</p><div class="grounds">{ground("lt", "light")}{ground("dk", "dark")}</div>
 <p class="note">logos/{slug}.svg · {len(s.encode())/1024:.1f} KB</p></div></article>''')
     icons = ''.join(f'<div class="dicon{" sel" if i == 0 else ""}"><img src="{data_uri(s)}" alt=""><span>FunDrivenDev</span></div>'
-                    for i, (_, _, _, s) in enumerate(LOGOS))
+                    for i, (_, _, _, _, s) in enumerate(LOGOS))
     start = data_uri(VERSIONS['d']['assets']['start.svg'])
     panels.append(f'''<section role="tabpanel" id="p-logos" aria-labelledby="t-logos" hidden>
-<div class="vhead"><div><h2>Logos</h2><p>Four avatar concepts. Each fills its square, with the mark kept inside the circle so both the GitHub org crop (rounded square) and a circle crop work.</p></div></div>
+<div class="vhead"><div><h2>Logos</h2><p>Three aesthetics, each as an FDD monogram and as a pictogram. Each fills its square, with the mark kept inside the circle so both the GitHub org crop (rounded square) and a circle crop work.</p></div></div>
 {''.join(items)}
 <h3 style="margin:24px 0 8px;font-size:16px">On the fundriven.dev desktop</h3>
 <div class="desk"><div class="icons">{icons}</div><div class="taskbar"><img src="{start}" alt="start"></div></div>
 <p class="note">Mock of a desktop icon with its label; the first one is shown selected. The real site's wallpaper may differ.</p>
 </section>''')
     page = (f'<title>FunDrivenDev Org Profile</title>\n<style>{CSS}</style>\n<div class="wrap">'
-            '<header class="top"><h1>FunDrivenDev org profile</h1><p>Four README directions and four logo concepts. Each mock renders the real profile/README.md as GitHub would; switch GitHub light/dark to see both banner variants.</p></header>'
+            '<header class="top"><h1>FunDrivenDev org profile</h1><p>Round 2: the XP banner and footer around the Night shift body, and six logos (XP, assembly line, zen; FDD and pictogram each). The mock renders the real profile/README.md as GitHub would; switch GitHub light/dark to see both banner variants.</p></header>'
             f'<div class="tabs" role="tablist" aria-label="Proposals">{tab_btns}</div>{"".join(panels)}</div>\n<script>{JS}</script>\n')
     return page
 
@@ -811,7 +939,7 @@ def main():
         for name, s in v['assets'].items():
             (d / 'assets' / name).write_text(s)
     (OUT / 'logos').mkdir(parents=True, exist_ok=True)
-    for slug, _, _, s in LOGOS:
+    for _, slug, _, _, s in LOGOS:
         (OUT / 'logos' / f'{slug}.svg').write_text(s)
     (OUT / 'preview.html').write_text(build_preview())
 
