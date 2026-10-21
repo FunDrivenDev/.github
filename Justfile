@@ -25,23 +25,27 @@ images:
     python3 design/images.py
     resvg --width 1024 --height 1024 logos/fdd.svg logos/fdd.png
 
-# Lint the files in scope: Markdown, spelling, and every SVG must parse.
+# Lint the files in scope: Markdown, spelling, workflows, and every SVG must parse.
 lint scope="all":
     #!/usr/bin/env bash
     set -euo pipefail
     md=$(just _files {{ quote(scope) }} '\.md$')
     svg=$(just _files {{ quote(scope) }} '\.svg$')
     all=$(just _files {{ quote(scope) }} '.')
+    workflows=$(just _files {{ quote(scope) }} '^\.github/workflows/')
     [ -z "$md" ] || rumdl check $md
     [ -z "$all" ] || typos --force-exclude $all
     [ -z "$svg" ] || xmllint --noout $svg
+    # actionlint also runs shellcheck on the workflows' `run:` blocks.
+    [ -z "$workflows" ] || actionlint $workflows
 
 # Lint everything that differs from main, or the whole repo.
 check scope="all": (lint scope)
 
-# Audit for secrets and personal data in the whole history.
+# Audit for secrets and personal data in the whole history, then unsafe workflows.
 audit:
     gitleaks git --config .gitleaks.toml --redact --no-banner --log-level warn .
+    zizmor --quiet .
 
 # The existing files of a scope matching a pattern, one per line.
 _files scope pattern:
