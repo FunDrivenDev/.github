@@ -1,0 +1,134 @@
+# The `dod` commit status for pull requests no laptop checks: Renovate's, Dependabot's,
+# and the tap's cask pull requests that each app's release opens (cask/<tag> branches,
+# FunDrivenDev/homebrew-tap's publish-cask action). A human pull request runs no job: its
+# `dod` comes from `toolbox dod check`, after the git hooks.
+#
+# Called by a short workflow in each repo, on `pull_request`:
+#
+#   jobs:
+#     dod:
+#       uses: FunDrivenDev/.github/.github/workflows/bot-dod.yml@<sha> # main
+#       permissions:
+#         contents: read
+#         statuses: write
+#       with:
+#         command: just check changed && just audit
+#
+# `check` runs the repo's pre-push command on the pull request's head, with a read-only
+# token; `report` posts `dod` on that head (success or failure, context `dod` as
+# `toolbox dod check` posts it), without running any of the pull request's code.
+
+name: Bot dod
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: The checks, as the repo's pre-push hook runs them (bash, at the root).
+        type: string
+        required: true
+      setup:
+        description: Commands run once the tools are installed, before the checks (dependencies).
+        type: string
+        default: ""
+      apt-packages:
+        description: Ubuntu packages installed before the tools, space-separated.
+        type: string
+        default: ""
+      rust-cache:
+        description: Cargo workspaces to cache (Swatinem/rust-cache `workspaces`); empty for none.
+        type: string
+        default: ""
+      runs-on:
+        description: The runner label.
+        type: string
+        default: ubuntu-24.04
+      timeout-minutes:
+        description: The check job's timeout.
+        type: number
+        default: 30
+
+permissions: {}
+
+jobs:
+  check:
+    name: Checks
+    if: >-
+      github.event_name == 'pull_request' && (
+        contains(fromJSON('["renovate[bot]", "dependabot[bot]"]'), github.event.pull_request.user.login)
+        || (github.repository == 'FunDrivenDev/homebrew-tap'
+          && github.event.pull_request.head.repo.full_name == github.repository
+          && startsWith(github.head_ref, 'cask/'))
+      )
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    concurrency:
+      group: bot-dod-${{ github.repository }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      # The head, not the merge commit: `dod` is posted on the head. The whole history,
+      # for gitleaks and for the `changed` scope's origin/main.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install the system packages
+        if: inputs.apt-packages != ''
+        run: |
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086 # one argument per package
+          sudo apt-get install -y -qq $APT_PACKAGES
+        env:
+          APT_PACKAGES: ${{ inputs.apt-packages }}
+
+      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
+        with:
+          version: 2026.10.3
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        if: inputs.rust-cache != ''
+        with:
+          workspaces: ${{ inputs.rust-cache }}
+          cache-on-failure: true
+
+      - name: Set up
+        if: inputs.setup != ''
+        run: bash -euo pipefail -c "$SETUP"
+        env:
+          SETUP: ${{ inputs.setup }}
+
+      - name: Check
+        run: bash -euo pipefail -c "$CHECKS"
+        env:
+          CHECKS: ${{ inputs.command }}
+          # Read-only; lets zizmor check the pinned actions online.
+          GH_TOKEN: ${{ github.token }}
+
+  report:
+    name: Post dod
+    needs: check
+    # Not on a cancelled run: the newer push that cancelled it reports on its own head.
+    if: always() && contains(fromJSON('["success", "failure"]'), needs.check.result)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      statuses: write # the dod commit status on the head
+    steps:
+      - name: Post dod on the pull request's head
+        run: |
+          description="${CHECKS:0:100} → ${RESULT} (bot pull request)"
+          gh api -X POST "repos/$REPO/statuses/$SHA" \
+            -f state="$RESULT" -f context=dod \
+            -f description="${description:0:140}" \
+            -f target_url="$RUN_URL" > /dev/null
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          RESULT: ${{ needs.check.result }}
+          CHECKS: ${{ inputs.command }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
