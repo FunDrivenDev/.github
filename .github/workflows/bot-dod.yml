@@ -1,7 +1,7 @@
-# The `dod` commit status for pull requests no laptop checks: Renovate's, Dependabot's,
-# and the tap's cask pull requests that each app's release opens (cask/<tag> branches,
-# FunDrivenDev/homebrew-tap's publish-cask action). A human pull request runs no job: its
-# `dod` comes from `toolbox dod check`, after the git hooks.
+# The `dod` commit status for pull requests no laptop checks: Renovate's, and the tap's cask
+# pull requests that each app's release opens (cask/<tag> branches, FunDrivenDev/homebrew-tap's
+# publish-cask action). A human pull request runs no job: its `dod` comes from
+# `toolbox dod check`, after the git hooks.
 #
 # Called by a short workflow in each repo, on `pull_request`:
 #
@@ -55,7 +55,7 @@ jobs:
     name: Checks
     if: >-
       github.event_name == 'pull_request' && (
-        contains(fromJSON('["renovate[bot]", "dependabot[bot]"]'), github.event.pull_request.user.login)
+        github.event.pull_request.user.login == 'renovate[bot]'
         || (github.repository == 'FunDrivenDev/homebrew-tap'
           && github.event.pull_request.head.repo.full_name == github.repository
           && startsWith(github.head_ref, 'cask/'))
