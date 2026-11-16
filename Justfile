@@ -13,7 +13,7 @@ default:
 
 # Once per clone: install the pinned tools and the git hooks.
 init:
-    mise install
+    mise install --locked
     hk install
 
 # Format the Markdown files in scope.
