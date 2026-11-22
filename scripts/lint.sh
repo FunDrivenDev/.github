@@ -4,6 +4,7 @@
 set -euo pipefail
 
 scope=$1
+scripts/files.sh "$scope" . >/dev/null # refuses an unknown scope
 mapfile -t md < <(scripts/files.sh "$scope" '\.md$')
 mapfile -t svg < <(scripts/files.sh "$scope" '\.svg$')
 mapfile -t all < <(scripts/files.sh "$scope" '.')

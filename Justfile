@@ -18,7 +18,7 @@ init:
 
 # Format the Markdown files in scope.
 fmt scope="all":
-    @files=$(scripts/files.sh {{ quote(scope) }} '\.md$'); [ -z "$files" ] || rumdl fmt $files
+    @mapfile -t files < <(scripts/files.sh {{ quote(scope) }} '\.md$'); (( ${#files[@]} == 0 )) || rumdl fmt "${files[@]}"
 
 # Redraw the banner, start button and avatar from design/images.py, then the avatar PNG.
 images:
@@ -27,6 +27,7 @@ images:
 
 # Lint the files in scope: Markdown, spelling, and every SVG must parse.
 lint scope="all":
+    scripts/check-justfile.sh
     scripts/lint.sh {{ quote(scope) }}
 
 # Lint everything that differs from main, or the whole repo.
